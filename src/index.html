@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Asignación de Parqueaderos - Bobathon</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <div>
+                    <h1>🚗 Sistema Inteligente de Asignación de Parqueaderos</h1>
+                    <p class="subtitle">Bobathon 2026 - Gestión Automatizada de Parqueaderos</p>
+                </div>
+                <div class="header-actions">
+                    <button id="openUsersCrud" class="btn btn-secondary">CRUD Usuarios</button>
+                    <button id="openParkingCrud" class="btn btn-secondary">CRUD Parqueaderos</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="config-section">
+            <h2>⚙️ Configuración</h2>
+            <div class="config-form">
+                <div class="form-group">
+                    <label for="apiKey">Clave API de Monday.com:</label>
+                    <input type="password" id="apiKey" placeholder="Ingrese su clave API de Monday.com">
+                </div>
+                <div class="form-group">
+                    <label for="parkingBoardId">Tablero de Parqueaderos (ID o nombre):</label>
+                    <input type="text" id="parkingBoardId" placeholder="Ingrese el ID o nombre del tablero de parqueaderos">
+                </div>
+                <div class="form-group">
+                    <label for="employeeBoardId">Tablero de Empleados (ID o nombre):</label>
+                    <input type="text" id="employeeBoardId" placeholder="Ingrese el ID o nombre del tablero de empleados">
+                </div>
+                <div class="form-group">
+                    <label for="assignmentColumnId">Columna para guardar asignación:</label>
+                    <input type="text" id="assignmentColumnId" placeholder="ID de columna o dejar vacío para detección automática">
+                </div>
+                <button id="saveConfig" class="btn btn-primary">Guardar Configuración</button>
+                <span id="configStatus" class="status-message"></span>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h2>📅 Control de Asignación</h2>
+            <div class="control-panel">
+                <div class="form-group">
+                    <label for="assignmentDate">Fecha base:</label>
+                    <input type="date" id="assignmentDate">
+                </div>
+                <div class="form-group">
+                    <label for="rangeStartDate">Desde:</label>
+                    <input type="date" id="rangeStartDate">
+                </div>
+                <div class="form-group">
+                    <label for="rangeEndDate">Hasta:</label>
+                    <input type="date" id="rangeEndDate">
+                </div>
+                <div class="form-group">
+                    <label for="rangeMode">Modo:</label>
+                    <select id="rangeMode">
+                        <option value="single">Un día</option>
+                        <option value="range">Rango diario</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="monthly">Mensual</option>
+                    </select>
+                </div>
+                <button id="shortcutToday" class="btn btn-secondary">Hoy</button>
+                <button id="shortcutPrevWeek" class="btn btn-secondary">Semana anterior</button>
+                <button id="shortcutNextWeek" class="btn btn-secondary">Próxima semana</button>
+                <button id="shortcutMonth" class="btn btn-secondary">Este mes</button>
+                <button id="loadData" class="btn btn-secondary">Cargar Datos desde Monday.com</button>
+                <button id="runAssignment" class="btn btn-success" disabled>Ejecutar Asignación Automática</button>
+                <button id="runBulkAssignment" class="btn btn-success" disabled>Autoasignar rango</button>
+                <button id="updateBoard" class="btn btn-primary" disabled>Actualizar Tablero de Monday.com</button>
+            </div>
+            <div id="statusMessage" class="status-box"></div>
+        </div>
+
+        <div class="stats-section">
+            <h2>📊 Estadísticas</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalParkingLots">0</div>
+                    <div class="stat-label">Total Parqueaderos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="availableLots">0</div>
+                    <div class="stat-label">Parqueaderos Disponibles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalEmployees">0</div>
+                    <div class="stat-label">Total Empleados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="employeesInOffice">0</div>
+                    <div class="stat-label">Vienen a la Oficina</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="assignedCount">0</div>
+                    <div class="stat-label">Asignados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="unassignedCount">0</div>
+                    <div class="stat-label">Sin Asignar</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-section">
+            <div class="data-column">
+                <h2>🅿️ Parqueaderos</h2>
+                <div class="filter-group">
+                    <label>
+                        <input type="checkbox" id="filterAvailable" checked> Mostrar Solo Disponibles
+                    </label>
+                </div>
+                <div id="parkingList" class="data-list"></div>
+            </div>
+
+            <div class="data-column">
+                <h2>👥 Empleados que Vienen a la Oficina</h2>
+                <div class="filter-group">
+                    <label>
+                        <input type="checkbox" id="filterUnassigned" checked> Mostrar Solo Sin Asignar
+                    </label>
+                </div>
+                <div id="employeeList" class="data-list"></div>
+            </div>
+        </div>
+
+        <div class="assignments-section">
+            <h2>✅ Asignaciones de Parqueadero</h2>
+            <div id="assignmentsList" class="assignments-list"></div>
+        </div>
+
+        <div class="assignments-section">
+            <h2>🗓️ Resumen por rango</h2>
+            <div id="bulkAssignmentsList" class="assignments-list"></div>
+        </div>
+
+        <div id="usersCrudPanel" class="crud-panel hidden">
+            <div class="crud-header">
+                <h2>👤 CRUD Usuarios</h2>
+                <button id="closeUsersCrud" class="btn btn-secondary">Cerrar</button>
+            </div>
+            <div class="crud-form">
+                <input type="hidden" id="userEditId">
+                <div class="form-group">
+                    <label for="userName">Nombre</label>
+                    <input type="text" id="userName" placeholder="Nombre completo">
+                </div>
+                <div class="form-group">
+                    <label for="userEmployeeId">Employee ID</label>
+                    <input type="text" id="userEmployeeId" placeholder="Identificador">
+                </div>
+                <div class="form-group">
+                    <label for="userCampaign">Campaña</label>
+                    <input type="text" id="userCampaign" placeholder="Campaña">
+                </div>
+                <div class="form-group">
+                    <label for="userShift">Horario</label>
+                    <input type="text" id="userShift" placeholder="Horario">
+                </div>
+                <button id="saveUserCrud" class="btn btn-primary">Guardar usuario</button>
+            </div>
+            <div id="usersCrudList" class="data-list"></div>
+        </div>
+
+        <div id="parkingCrudPanel" class="crud-panel hidden">
+            <div class="crud-header">
+                <h2>🅿️ CRUD Parqueaderos</h2>
+                <button id="closeParkingCrud" class="btn btn-secondary">Cerrar</button>
+            </div>
+            <div class="crud-form">
+                <input type="hidden" id="parkingEditId">
+                <div class="form-group">
+                    <label for="parkingName">Nombre</label>
+                    <input type="text" id="parkingName" placeholder="Ej. C1">
+                </div>
+                <div class="form-group">
+                    <label for="parkingZone">Zona</label>
+                    <input type="text" id="parkingZone" placeholder="Zona">
+                </div>
+                <div class="form-group">
+                    <label for="parkingType">Tipo</label>
+                    <input type="text" id="parkingType" placeholder="Tipo">
+                </div>
+                <div class="form-group">
+                    <label for="parkingCapacity">Capacidad</label>
+                    <input type="number" id="parkingCapacity" min="1" value="1">
+                </div>
+                <button id="saveParkingCrud" class="btn btn-primary">Guardar parqueadero</button>
+            </div>
+            <div id="parkingCrudList" class="data-list"></div>
+        </div>
+
+        <footer>
+            <p>Bobathon 2026 - Sistema Inteligente de Asignación de Parqueaderos</p>
+            <p>Desarrollado con Monday.com API</p>
+        </footer>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/mondayClient.js"></script>
+    <script src="js/assignmentEngine.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  parking-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: parking-assignment-app
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    labels:
+      - "com.bobathon.project=parking-assignment"
+      - "com.bobathon.description=Smart Parking Assignment System"
+      - "com.bobathon.version=1.0.0"
+
+networks:
+  default:
+    name: parking-network
+
+# Made with Bob
